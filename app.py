@@ -1,14 +1,15 @@
 from flask import Flask, render_template, request
+from cs50 import SQL
 
 app = Flask(__name__)
+
+db = SQL("sqlite:///froshims.db")
 
 SPORTS = [
     "Basketball",
     "Soccer",
     "Ultimate Frisbee",
 ]
-
-REGISTRANTS = {}
 
 
 @app.route("/")
@@ -27,10 +28,11 @@ def register():
     if sport not in SPORTS:
         return render_template("error.html", message="Invalid sport")
     
-    REGISTRANTS[name] = sport # perfect world where name are unique
+    db.execute("INSERT INTO registrants (name, sport) VALUES(?, ?)", name, sport)
     
     return render_template("success.html")
 
 @app.route("/registrants")
 def registrants():
-    return render_template("registrants.html", registrants=REGISTRANTS)
+    registrants = db.execute("SELECT * FROM registrants")
+    return render_template("registrants.html", registrants=registrants)
